@@ -191,6 +191,28 @@ a.btn{text-decoration:none}
   .g-grid{grid-template-columns:2rem 7rem 1.4fr 6rem 6rem 3.5rem 1fr}
 }
 
+/* ===== كشف الطباعة اليومي المسطّر ===== */
+#print-sheet{display:none;background:#fff;color:#000;font-family:var(--f-body)}
+#print-sheet .ps-lab{text-align:center;font-size:20pt;font-weight:800;letter-spacing:.2px}
+#print-sheet .ps-doc-title{text-align:center;font-size:13pt;font-weight:700;margin:2px 0 12px}
+#print-sheet .ps-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1.5px solid #000;padding:9px 14px;margin-bottom:12px;font-size:12.5pt;font-weight:700;page-break-inside:avoid}
+#print-sheet .ps-table{width:100%;border-collapse:collapse;font-size:11.5pt}
+#print-sheet .ps-table th,#print-sheet .ps-table td{border:1.3px solid #000;padding:8px 9px;text-align:right;vertical-align:top}
+#print-sheet .ps-table thead th{background:#eee;color:#000;font-weight:800;text-align:center}
+#print-sheet .ps-table tbody tr:nth-child(even) td{background:#f6f6f6}
+#print-sheet .ps-table tr{page-break-inside:avoid}
+#print-sheet .ps-c{text-align:center!important}
+#print-sheet .ps-case{font-weight:700;direction:ltr;text-align:center}
+#print-sheet .ps-units{font-weight:800;text-align:center}
+#print-sheet .ps-gov{font-size:9.5pt;color:#333;font-weight:400}
+#print-sheet .ps-empty{border:1.3px solid #000;padding:16px;text-align:center;font-size:12pt}
+#print-sheet .ps-total{display:flex;justify-content:space-between;margin-top:10px;font-size:12.5pt;font-weight:800;border-top:2px solid #000;padding-top:8px;page-break-inside:avoid}
+@media print{
+  body.print-sheet .app-shell,body.print-sheet #toast{display:none!important}
+  body.print-sheet #print-sheet{display:block!important}
+  #print-sheet .ps-lab,#print-sheet .ps-meta,#print-sheet .ps-table thead th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
 /* ===== Dark mode (الوضع الليلي) ===== */
 html[data-theme="dark"]{
   --primary:#3f93cc;--primary-light:#122c42;--accent:#56c1f2;--accent-soft:#0c2e44;
@@ -756,6 +778,8 @@ service cloud.firestore {
 </div><!-- /app-shell -->
 
 <div id="toast" class="toast" hidden role="status"></div>
+
+<div id="print-sheet" dir="rtl" aria-hidden="true"></div>
 
 <div id="pdf-stage" dir="rtl" aria-hidden="true"></div>
 
@@ -2961,9 +2985,59 @@ function bind(){
   setupDocCombo('returned', '#c-ret-doc', '#drop-ret-doc', '#gov-ret-doc');
   setupDocCombo('repairs', '#c-rep-doc', '#drop-rep-doc', '#gov-rep-doc');
 
-  // Print buttons
+  // Print buttons — كشف يومي مسطّر
+  var PRINT_SECTION = null;
+  function renderPrintSheet(section){
+    var el = $('#print-sheet');
+    if (!el) return;
+    var tf = typeFieldFor(section);
+    var typeHead = section==='returned' ? 'قرار الطبيب' : section==='repairs' ? 'السبب' : 'النوع';
+    var secTitle = {final:'كشف الإنتاج النهائي اليومي', tryin:'كشف خروج البروفات اليومي', returned:'كشف الحالات الراجعة اليومي', repairs:'كشف التصليحات الواردة اليومي'}[section];
+    var rows = listFor(section).filter(function(c){ return c.techId===S.techId && c.date===S.date; });
+    var meta = '<div class="ps-meta"><span>اسم الفني: '+esc(techName(S.techId))+'</span><span>التاريخ: '+esc(fmtDay(S.date))+' ('+esc(fmtDate(S.date))+')</span></div>';
+    var bodyHtml;
+    if (!rows.length){
+      bodyHtml = '<div class="ps-empty">لا توجد سجلات لهذا الفني في اليوم ده.</div>';
+    } else {
+      bodyHtml = '<table class="ps-table"><thead><tr>'+
+        '<th style="width:2rem">م</th>'+
+        '<th style="width:15%">رقم الحالة</th>'+
+        '<th>اسم الطبيب</th>'+
+        '<th style="width:11%">عدد الوحدات</th>'+
+        '<th style="width:16%">'+typeHead+'</th>'+
+        '<th>ملاحظات</th>'+
+      '</tr></thead><tbody>'+
+      rows.map(function(c,i){
+        return '<tr>'+
+          '<td class="ps-c">'+(i+1)+'</td>'+
+          '<td class="ps-case">'+esc(c.caseNo)+'</td>'+
+          '<td>'+esc(c.docName||'—')+(c.gov?' <span class="ps-gov">('+esc(c.gov)+')</span>':'')+'</td>'+
+          '<td class="ps-units">'+esc(c.units)+'</td>'+
+          '<td>'+esc(c[tf]||'—')+'</td>'+
+          '<td>'+esc(c.note||'')+'</td>'+
+        '</tr>';
+      }).join('')+
+      '</tbody></table>'+
+      '<div class="ps-total"><span>الإجمالي: '+rows.length+' حالة</span><span>إجمالي الوحدات: '+sumUnits(rows)+'</span></div>';
+    }
+    el.innerHTML = '<div class="ps-lab">معمل محمد جمعه للأسنان</div>'+
+      '<div class="ps-doc-title">'+esc(secTitle)+'</div>'+meta+bodyHtml;
+  }
+  window.__printSheet = function(section){
+    document.body.classList.add('print-sheet');
+    renderPrintSheet(section || 'final');
+  };
   $$('[data-print]').forEach(function(b){
-    b.addEventListener('click', function(){ window.print(); });
+    b.addEventListener('click', function(){
+      PRINT_SECTION = b.dataset.print;
+      document.body.classList.add('print-sheet');
+      renderPrintSheet(PRINT_SECTION);
+      setTimeout(function(){ window.print(); }, 50);
+    });
+  });
+  window.addEventListener('afterprint', function(){
+    document.body.classList.remove('print-sheet');
+    PRINT_SECTION = null;
   });
 
   // Search
