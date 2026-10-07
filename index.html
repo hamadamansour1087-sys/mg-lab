@@ -147,13 +147,15 @@ a.btn{text-decoration:none}
 
 .ledger{background:var(--sheet);border:1px solid var(--border-strong);border-radius:8px;overflow:hidden}
 .lhead,.lrow{display:grid;align-items:center;column-gap:8px;padding:10px 12px}
-.g-grid{grid-template-columns:2.5rem 8rem minmax(0,1.6fr) 6.5rem 7.5rem 4rem minmax(0,1fr) 7rem}
+.g-grid{grid-template-columns:2.5rem 8rem minmax(0,1.6fr) 6.5rem 7.5rem 4rem minmax(0,1fr) 10rem}
 .lhead{background:#e9eef2;font-weight:700;border-bottom:2px solid var(--border-strong);font-size:.85rem}
 .lrow{border-bottom:1px solid var(--border)}
 .lrow:nth-child(even){background:#fbfcfd}
 .lrow:last-child{border-bottom:none}
 .c-units-badge{display:inline-block;text-align:center;font-family:var(--f-mono);font-weight:700;font-size:1.05rem;color:var(--primary)}
 .empty{padding:28px;text-align:center;color:var(--ink-muted)}
+.reassign-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;background:var(--warn-soft);border-bottom:2px solid var(--warn);font-weight:700;color:var(--warn);font-size:.95rem}
+.reassign-banner .mono{font-size:1rem}
 
 .stats-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
 .stat-card{background:var(--sheet);border:1px solid var(--border);border-radius:8px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
@@ -273,7 +275,7 @@ html[data-theme="dark"] #pdf-stage{--primary:#0e4975;--primary-light:#e6f0f8;--a
   .lhead{display:none}
   .lrow{grid-template-columns:auto 1fr auto;grid-template-areas:"idx case units" "idx doc act" "idx meta meta" "idx note note";row-gap:2px;align-items:start}
   .c-idx{grid-area:idx}.c-case{grid-area:case}.c-units-cell{grid-area:units;text-align:end}
-  .c-doc{grid-area:doc}.c-act{grid-area:act;display:flex;justify-content:flex-end;gap:4px}
+  .c-doc{grid-area:doc}.c-act{grid-area:act;display:flex;justify-content:flex-end;gap:4px;flex-wrap:wrap}
   .c-meta{grid-area:meta;font-size:.84rem;color:var(--ink-muted);display:flex;flex-wrap:wrap;gap:4px 14px}
   .c-note{grid-area:note;font-size:.84rem;color:var(--ink-muted)}
   .c-note:empty,.c-meta:empty{display:none}
@@ -931,6 +933,7 @@ var S = {
   repairs: [],
   attendance: {},
   dueOpen: {final:false,tryin:false,returned:false,repairs:false},
+  reassign: {final:null,tryin:null,returned:null,repairs:null},
   forms: {
     final:    {editingId:null, type:null, docId:null},
     tryin:    {editingId:null, type:null, docId:null},
@@ -1080,7 +1083,7 @@ function renderHeader(){
 }
 
 function setTab(t){
-  if (S.tab !== t) resetAllForms();
+  if (S.tab !== t){ cancelAllReassign(); resetAllForms(); }
   S.tab = t;
   $$('.side-nav button, .bottom-nav button').forEach(function(b){
     if (b.dataset.tab===t) b.setAttribute('aria-current','page');
@@ -1109,6 +1112,7 @@ function setTab(t){
 function setDate(k){
   if (!validYmd(k)) return;
   S.date = k;
+  cancelAllReassign();
   resetAllForms();
   renderHeader();
   renderAll();
@@ -1117,6 +1121,7 @@ function setDate(k){
 function setTech(id){
   if (S.techId === id) return;
   S.techId = id;
+  cancelAllReassign();
   resetAllForms();
   ensureTech();
   renderAll();
@@ -1288,6 +1293,7 @@ function ledgerRowFor(section, c, i, dups){
     '<span class="c-note">'+esc(c.note||'')+'</span>'+
     '<span class="c-act no-print">'+
       '<button type="button" class="btn sm" data-act="edit" data-id="'+esc(c.id)+'">تعديل</button>'+
+      '<button type="button" class="btn sm" data-act="tech" data-id="'+esc(c.id)+'" title="نقل الحالة لفني آخر">الفني</button>'+
       '<button type="button" class="btn sm danger" data-act="del" data-id="'+esc(c.id)+'" style="margin-inline-start:4px">حذف</button>'+
     '</span>'+
   '</div>';
@@ -1312,7 +1318,9 @@ function renderLedgerFor(section){
     if (foot) foot.innerHTML='';
     return;
   }
-  box.innerHTML = head + rows.map(function(c,i){ return ledgerRowFor(section,c,i,dups); }).join('');
+  var rb = S.reassign ? S.reassign[section] : null;
+  var banner = rb ? '<div class="reassign-banner no-print"><span>تغيير فني الحالة <b class="mono">'+esc(rb.caseNo)+'</b> — اختر الفني الجديد من قائمة اختيار الفني في الأعلى، أو ألغِ العملية.</span><button type="button" class="btn sm" data-ract="cancel">إلغاء</button></div>' : '';
+  box.innerHTML = banner + head + rows.map(function(c,i){ return ledgerRowFor(section,c,i,dups); }).join('');
   if (foot){
     var color = section==='final'?'var(--primary)':section==='tryin'?'var(--accent)':section==='returned'?'var(--purple)':'var(--bad)';
     foot.innerHTML = '<span>'+esc(techName(S.techId))+' · '+rows.length+' حالة</span>'+
@@ -1509,10 +1517,16 @@ function saveSectionRecord(section){
     return;
   }
 
+  var editId0 = S.forms[section].editingId;
+  var recTechId = S.techId, recTechName = techName(S.techId);
+  if (editId0){
+    var origRec = listFor(section).find(function(x){ return x.id===editId0; });
+    if (origRec){ recTechId = origRec.techId; recTechName = origRec.techName || techName(origRec.techId); }
+  }
   var rec = {
     date: S.date,
-    techId: S.techId,
-    techName: techName(S.techId),
+    techId: recTechId,
+    techName: recTechName,
     caseNo: p.no,
     month: p.month,
     seq: p.seq,
@@ -1552,11 +1566,57 @@ function editItem(section, id){
   $('#c-'+sfx+'-note').value = c.note||'';
   var duEl2 = $('#c-'+sfx+'-due'); if (duEl2) duEl2.value = (validYmd(c.due)?c.due:'');
   var gEl = $('#gov-'+sfx+'-doc'); if (gEl) gEl.textContent = c.gov ? ('المحافظة: '+c.gov) : '';
-  var tEl = $('#title-'+section); if (tEl) tEl.textContent = 'تعديل الحالة '+c.caseNo;
+  var tEl = $('#title-'+section); if (tEl) tEl.textContent = 'تعديل الحالة '+c.caseNo+' — الفني: '+(c.techName||techName(c.techId));
   var cnEl = $('#btn-cancel-'+section); if (cnEl) cnEl.hidden = false;
   renderChipsFor(section);
   $('#c-'+sfx+'-case').focus();
   window.scrollTo({top:120, behavior:'smooth'});
+}
+
+/* ============================================================
+   REASSIGN — نقل الحالة لفني آخر بعد التسجيل
+   ============================================================ */
+function cancelAllReassign(){
+  ['final','tryin','returned','repairs'].forEach(function(s){ S.reassign[s]=null; });
+}
+function closeAllTechDrops(){
+  ['final','tryin','returned','repairs'].forEach(function(sec){
+    var inp = $('#search-tech-'+sec);
+    if (inp) inp.value = S.techId ? techName(S.techId) : '';
+    var box = $('#tech-chips-'+sec); if (box) box.hidden = true;
+  });
+}
+function startReassign(section, id){
+  var c = listFor(section).find(function(x){ return x.id===id; });
+  if (!c) return;
+  S.reassign[section] = {id:id, caseNo:c.caseNo};
+  if (S.forms[section].editingId) resetForm(section);
+  renderLedgerFor(section);
+  var box = $('#tech-chips-'+section), inp = $('#search-tech-'+section);
+  if (box) box.hidden = false;
+  if (inp){ inp.value=''; applyTechSearch(section, ''); inp.focus(); try{ inp.select(); }catch(_e){ } }
+  toast('اختر الفني الجديد للحالة '+c.caseNo);
+}
+function cancelReassign(section){
+  S.reassign[section] = null;
+  renderLedgerFor(section);
+  closeAllTechDrops();
+}
+function doReassign(section, id, newTechId){
+  var c = listFor(section).find(function(x){ return x.id===id; });
+  if (!c || !findTech(newTechId)){ cancelReassign(section); return; }
+  var tname = techName(newTechId);
+  statusPill('syncing');
+  db.collection(collFor(section)).doc(id).update({techId:newTechId, techName:tname}).then(function(){
+    statusPill('online');
+    toast('تم نقل الحالة '+c.caseNo+' إلى الفني: '+tname);
+  }).catch(function(){
+    statusPill('online');
+    toast('تعذّر تغيير الفني');
+  });
+  S.reassign[section] = null;
+  renderLedgerFor(section);
+  closeAllTechDrops();
 }
 
 /* ============================================================
@@ -2917,11 +2977,14 @@ function bind(){
   document.body.addEventListener('click', function(e){
     var b = e.target.closest('.chip[data-tech]');
     if (!b) return;
+    var holder = b.closest('[id^="tech-chips-"]');
+    var sec0 = holder ? holder.id.replace('tech-chips-','') : null;
+    if (sec0 && S.reassign && S.reassign[sec0]){
+      doReassign(sec0, S.reassign[sec0].id, b.dataset.tech);
+      return;
+    }
     setTech(b.dataset.tech);
-    ['final','tryin','returned','repairs'].forEach(function(sec){
-      var inp = $('#search-tech-'+sec); if (inp) inp.value = techName(S.techId);
-      var box = $('#tech-chips-'+sec); if (box) box.hidden = true;
-    });
+    closeAllTechDrops();
   });
 
   // Type/Action/Reason chips
@@ -2972,9 +3035,12 @@ function bind(){
     var box = $('#ledger-'+section);
     if (!box) return;
     box.addEventListener('click', function(e){
+      var r = e.target.closest('[data-ract]');
+      if (r){ cancelReassign(section); return; }
       var b = e.target.closest('[data-act]');
       if (!b) return;
       if (b.dataset.act==='edit') editItem(section, b.dataset.id);
+      else if (b.dataset.act==='tech') startReassign(section, b.dataset.id);
       else if (b.dataset.act==='del') deleteRecord(section, b.dataset.id);
     });
   });
@@ -3081,7 +3147,10 @@ function bind(){
         [].some.call(box.querySelectorAll('.chip[data-tech]'), function(c){
           if (c.style.display !== 'none'){ first = c; return true; } return false;
         });
-        if (first){ setTech(first.dataset.tech); inp.value = techName(S.techId); closeTechDrop(sec); }
+        if (first){
+          if (S.reassign && S.reassign[sec]) doReassign(sec, S.reassign[sec].id, first.dataset.tech);
+          else { setTech(first.dataset.tech); inp.value = techName(S.techId); closeTechDrop(sec); }
+        }
       }
     });
     box.addEventListener('mousedown', function(e){
