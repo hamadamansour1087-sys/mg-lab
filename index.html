@@ -315,6 +315,7 @@ html[data-theme="dark"] #pdf-stage{--primary:#0e4975;--primary-light:#e6f0f8;--a
 <main>
 
 <section id="v-final" class="view">
+  <div class="no-print" style="margin:0 0 6px"><input id="search-tech-final" type="text" placeholder="🔎 ابحث عن فني بالاسم..." style="width:100%;max-width:300px;padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--sheet);color:var(--ink);font-family:var(--f-body);font-size:.95rem"></div>
   <div class="no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <span class="lbl" style="font-size:.95rem;margin:0;color:var(--ink)">اسم الفني /</span>
     <div id="tech-chips-final" class="chips"></div>
@@ -370,6 +371,7 @@ html[data-theme="dark"] #pdf-stage{--primary:#0e4975;--primary-light:#e6f0f8;--a
 </section>
 
 <section id="v-tryin" class="view" hidden>
+  <div class="no-print" style="margin:0 0 6px"><input id="search-tech-tryin" type="text" placeholder="🔎 ابحث عن فني بالاسم..." style="width:100%;max-width:300px;padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--sheet);color:var(--ink);font-family:var(--f-body);font-size:.95rem"></div>
   <div class="no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <span class="lbl" style="font-size:.95rem;margin:0;color:var(--ink)">اسم الفني /</span>
     <div id="tech-chips-tryin" class="chips"></div>
@@ -422,6 +424,7 @@ html[data-theme="dark"] #pdf-stage{--primary:#0e4975;--primary-light:#e6f0f8;--a
 </section>
 
 <section id="v-returned" class="view" hidden>
+  <div class="no-print" style="margin:0 0 6px"><input id="search-tech-returned" type="text" placeholder="🔎 ابحث عن فني بالاسم..." style="width:100%;max-width:300px;padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--sheet);color:var(--ink);font-family:var(--f-body);font-size:.95rem"></div>
   <div class="no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <span class="lbl" style="font-size:.95rem;margin:0;color:var(--ink)">الفني المستلم /</span>
     <div id="tech-chips-returned" class="chips"></div>
@@ -474,6 +477,7 @@ html[data-theme="dark"] #pdf-stage{--primary:#0e4975;--primary-light:#e6f0f8;--a
 </section>
 
 <section id="v-repairs" class="view" hidden>
+  <div class="no-print" style="margin:0 0 6px"><input id="search-tech-repairs" type="text" placeholder="🔎 ابحث عن فني بالاسم..." style="width:100%;max-width:300px;padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--sheet);color:var(--ink);font-family:var(--f-body);font-size:.95rem"></div>
   <div class="no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <span class="lbl" style="font-size:.95rem;margin:0;color:var(--ink)">الفني المسؤول /</span>
     <div id="tech-chips-repairs" class="chips"></div>
@@ -558,6 +562,7 @@ html[data-theme="dark"] #pdf-stage{--primary:#0e4975;--primary-light:#e6f0f8;--a
         <option value="detail">تفصيلي (كل الحالات)</option>
         <option value="byTech">ملخص حسب الفني</option>
         <option value="byTechDaily">يومي لكل فني (تفصيلي)</option>
+        <option value="byDay">ملخص حسب اليوم</option>
         <option value="byGov">ملخص حسب المحافظة</option>
         <option value="byType">ملخص حسب النوع</option>
         <option value="byGovType" selected>محافظة × نوع (مصفوفة)</option>
@@ -782,7 +787,7 @@ try {
    ============================================================ */
 var GOVS = ['القاهرة','الجيزة','الإسكندرية','القليوبية','الشرقية','الدقهلية','الغربية','المنوفية','البحيرة','كفر الشيخ','دمياط','بورسعيد','الإسماعيلية','السويس','الفيوم','بني سويف','المنيا','أسيوط','سوهاج','قنا','الأقصر','أسوان','مطروح','الوادي الجديد','البحر الأحمر','شمال سيناء','جنوب سيناء'];
 var TYPES_FINAL_DEFAULT = ['زركون','إيماكس','بورسلين','واكس','كاستينج','فينير','مؤقت'];
-var TRYIN_TYPES = ['بروفا شمع / واكس','بروفا معدن / فريم','بروفا بيسكوتة','بروفا فينير','تجربة كاستينج'];
+var TRYIN_TYPES = ['بروفا معدن','بروفا PMMA'];
 var RETURNED_ACTIONS = ['جاهز للفينش النهائي','تعديل بسيط وفينش','تعديل وإعادة بروفا','تعديل عضة / إطباق','تعديل لون / شيد','أخذ مقاس جديد'];
 var REPAIR_REASONS = ['تعديل لون','تعديل عضة وإطباق','كسر في البورسلين','إعادة مقاس / طبعة','إضافة سنة / تعديل','تعديل كونتاكت'];
 var STATUS = [['present','حاضر'],['late','متأخر'],['leave','إجازة'],['absent','غائب']];
@@ -1159,6 +1164,17 @@ function resetForm(section){
 /* ============================================================
    RENDER
    ============================================================ */
+var TECH_SEARCH = {final:'', tryin:'', returned:'', repairs:''};
+function applyTechSearch(section){
+  var box = $('#tech-chips-'+section); var inp = $('#search-tech-'+section);
+  if (!box || !inp) return;
+  var q = norm(inp.value || '');
+  [].forEach.call(box.querySelectorAll('.chip'), function(ch){
+    var nm = ch.getAttribute('data-name') || ch.textContent;
+    ch.style.display = (!q || norm(nm).indexOf(q) > -1) ? '' : 'none';
+  });
+}
+
 function renderSection(section){
   renderChipsFor(section);
   renderLedgerFor(section);
@@ -1171,15 +1187,17 @@ function renderChipsFor(section){
   var list = listFor(section);
   var chips = activeTechs().map(function(t){
     var u = sumUnits(list.filter(function(c){ return c.techId===t.id && c.date===S.date; }));
-    return '<button type="button" class="chip" data-tech="'+esc(t.id)+'" aria-pressed="'+(t.id===S.techId)+'">'+esc(t.name)+(u?' <b>'+u+'</b>':'')+'</button>';
+    return '<button type="button" class="chip" data-tech="'+esc(t.id)+'" data-name="'+esc(t.name)+'" aria-pressed="'+(t.id===S.techId)+'">'+esc(t.name)+(u?' <b>'+u+'</b>':'')+'</button>';
   }).join('');
   chipBox.innerHTML = chips || '<span class="muted">أضف الفنيين من الإعدادات</span>';
+  applyTechSearch(section);
 
   if (section==='final'){
     $('#type-chips-final').innerHTML = S.typesFinal.map(function(ty){
       return '<button type="button" class="chip" data-type="'+esc(ty)+'" aria-pressed="'+(ty===S.forms.final.type)+'">'+esc(ty)+'</button>';
     }).join('') || '<span class="muted">أضف الأنواع من الإعدادات</span>';
   } else if (section==='tryin'){
+    if (TRYIN_TYPES.indexOf(S.forms.tryin.type)<0) S.forms.tryin.type='';
     $('#type-chips-tryin').innerHTML = TRYIN_TYPES.map(function(ty){
       return '<button type="button" class="chip" data-type="'+esc(ty)+'" aria-pressed="'+(ty===S.forms.tryin.type)+'">'+esc(ty)+'</button>';
     }).join('');
@@ -1726,6 +1744,7 @@ function runReport(){
   else if (d.view==='byGovType') box.innerHTML = renderMatrixByGovType(d);
   else if (d.view==='byGovTypeList') box.innerHTML = renderListByGovType(d);
   else if (d.view==='byTechDaily') box.innerHTML = renderDailyByTech(d);
+  else if (d.view==='byDay') box.innerHTML = renderSummaryByDay(d);
 }
 
 function renderDetailReport(d){
@@ -1889,6 +1908,42 @@ function renderSummaryByType(d){
     '</div>';
   }).join('');
   return '<div class="ledger">'+head+rows+'</div>';
+}
+
+/* ملخص حسب اليوم: حالات ووحدات كل يوم + أعلى فني وأعلى محافظة */
+function renderSummaryByDay(d){
+  var map = {};
+  d.list.forEach(function(c){
+    var k = c.date || 'بدون تاريخ';
+    if (!map[k]) map[k] = {date:k, cases:0, units:0, techs:{}, govs:{}};
+    map[k].cases++;
+    map[k].units += (+c.units||0);
+    var tn = c.techName || techName(c.techId) || '—';
+    map[k].techs[tn] = (map[k].techs[tn]||0) + (+c.units||0);
+    var gv = c.gov || 'بدون محافظة';
+    map[k].govs[gv] = (map[k].govs[gv]||0) + (+c.units||0);
+  });
+  var list = Object.keys(map).map(function(k){ return map[k]; })
+    .sort(function(a,b){ return (a.date||'')<(b.date||'') ? 1 : -1; });
+  var cols = '2.5rem minmax(0,1.35fr) 5rem 5rem 5.5rem minmax(0,1fr) minmax(0,1fr)';
+  var head = '<div class="lhead" style="grid-template-columns:'+cols+'"><span>م</span><span>اليوم</span><span>حالات</span><span>وحدات</span><span>وحدات/حالة</span><span>أعلى فني</span><span>أعلى محافظة</span></div>';
+  var rows = list.map(function(g,i){
+    var tk = Object.keys(g.techs), gk = Object.keys(g.govs);
+    tk.sort(function(a,b){ return g.techs[b]-g.techs[a]; });
+    gk.sort(function(a,b){ return g.govs[b]-g.govs[a]; });
+    return '<div class="lrow" style="grid-template-columns:'+cols+'">'+
+      '<span>'+(i+1)+'</span>'+
+      '<span style="font-weight:600">'+esc(validYmd(g.date)?fmtDay(g.date):g.date)+'</span>'+
+      '<span class="mono">'+g.cases+'</span>'+
+      '<span class="c-units-badge">'+g.units+'</span>'+
+      '<span class="mono">'+(g.cases?(g.units/g.cases).toFixed(1):'0')+'</span>'+
+      '<span>'+(tk.length?esc(tk[0])+' <b class="mono">('+g.techs[tk[0]]+')</b>':'—')+'</span>'+
+      '<span>'+(gk.length?esc(gk[0])+' <b class="mono">('+g.govs[gk[0]]+')</b>':'—')+'</span>'+
+    '</div>';
+  }).join('');
+  var tot = list.reduce(function(a,g){ return {c:a.c+g.cases, u:a.u+g.units}; }, {c:0,u:0});
+  var foot = '<div class="lhead" style="grid-template-columns:'+cols+';border-top:2px solid var(--border-strong);border-bottom:0"><span></span><span>الإجمالي ('+list.length+' يوم)</span><span class="mono">'+tot.c+'</span><span class="mono">'+tot.u+'</span><span></span><span></span><span></span></div>';
+  return '<div class="ledger">'+head+rows+foot+'</div>';
 }
 
 function buildGovTypeMatrix(list){
@@ -2087,7 +2142,7 @@ function exportExcelReport(){
   if (!d.list.length){ toast('لا توجد بيانات للتصدير'); return; }
 
   var catName = {all:'جميع السجلات', final:'الإنتاج النهائي', tryin:'خروج البروفات', returned:'راجع من بروفا', repairs:'الإعادات والتصليحات'}[d.cat];
-  var viewName = {detail:'تفصيلي (كل الحالات)', byTech:'ملخص حسب الفني', byTechDaily:'يومي لكل فني (تفصيلي)', byGov:'ملخص حسب المحافظة', byType:'ملخص حسب النوع', byGovType:'مصفوفة (محافظة × نوع)', byGovTypeList:'محافظة ونوع (قائمة)'}[d.view];
+  var viewName = {detail:'تفصيلي (كل الحالات)', byTech:'ملخص حسب الفني', byTechDaily:'يومي لكل فني (تفصيلي)', byDay:'ملخص حسب اليوم', byGov:'ملخص حسب المحافظة', byType:'ملخص حسب النوع', byGovType:'مصفوفة (محافظة × نوع)', byGovTypeList:'محافظة ونوع (قائمة)'}[d.view];
   var totalUnits = sumUnits(d.list);
 
   var wb = new ExcelJS.Workbook();
@@ -2169,6 +2224,7 @@ function exportExcelReport(){
   else if (d.view==='byTechDaily') headers2 = ['التاريخ','رقم الحالة','الطبيب','المحافظة','نوع الحالة','الوحدات','ملاحظات'];
   else if (d.view==='byGov') headers2 = ['م','المحافظة','أطباء','حالات','وحدات'];
   else if (d.view==='byType') headers2 = ['م','النوع','حالات','وحدات'];
+  else if (d.view==='byDay') headers2 = ['م','اليوم','حالات','وحدات','وحدات/حالة','أعلى فني (وحدات)','أعلى محافظة (وحدات)'];
   else headers2 = ['م','القسم','التاريخ','رقم الحالة','الطبيب','المحافظة','الفني','النوع/التفاصيل','الوحدات','ملاحظات'];
 
   xlTitleZone(wb, ws, headers2.length, catName + ' — ' + viewName, d, totalUnits);
@@ -2228,6 +2284,33 @@ function exportExcelReport(){
     rr++;
     xlDataRow(ws, rr, ['', 'الإجمالي', tc3, tu3], false, true, 'FFE6F0F8');
     xlWidths(ws, [5, 22, 9, 9]);
+  } else if (d.view==='byDay'){
+    var dm = {};
+    d.list.forEach(function(c){
+      var k = c.date || 'بدون تاريخ';
+      if (!dm[k]) dm[k] = {date:k, cases:0, units:0, techs:{}, govs:{}};
+      dm[k].cases++; dm[k].units += (+c.units||0);
+      var tn = c.techName || techName(c.techId) || '—';
+      dm[k].techs[tn] = (dm[k].techs[tn]||0) + (+c.units||0);
+      var gv = c.gov || 'بدون محافظة';
+      dm[k].govs[gv] = (dm[k].govs[gv]||0) + (+c.units||0);
+    });
+    var drows = Object.keys(dm).map(function(k){ return dm[k]; })
+      .sort(function(a,b){ return (a.date||'')<(b.date||'') ? 1 : -1; });
+    drows.forEach(function(g,i){
+      var tk = Object.keys(g.techs), gk = Object.keys(g.govs);
+      tk.sort(function(a,b){ return g.techs[b]-g.techs[a]; });
+      gk.sort(function(a,b){ return g.govs[b]-g.govs[a]; });
+      rr++;
+      xlDataRow(ws, rr, [i+1, validYmd(g.date)?fmtDay(g.date):g.date, g.cases, g.units,
+        +(g.cases?(g.units/g.cases).toFixed(1):0),
+        tk.length?tk[0]+' ('+g.techs[tk[0]]+')':'',
+        gk.length?gk[0]+' ('+g.govs[gk[0]]+')':''], true);
+    });
+    var dc=0, du=0; drows.forEach(function(g){ dc+=g.cases; du+=g.units; });
+    rr++;
+    xlDataRow(ws, rr, ['', 'الإجمالي ('+drows.length+' يوم)', dc, du, '', '', ''], false, true, 'FFE6F0F8');
+    xlWidths(ws, [5, 26, 9, 9, 12, 22, 22]);
   } else if (d.view==='byTechDaily'){
     var tmap = {};
     d.list.forEach(function(c){
@@ -2265,7 +2348,7 @@ function exportExcelReport(){
 function buildPdfStage(d){
   var totalUnits = sumUnits(d.list);
   var catName = {all:'جميع السجلات', final:'الإنتاج النهائي', tryin:'خروج البروفات', returned:'راجع من بروفا', repairs:'الإعادات والتصليحات'}[d.cat];
-  var viewName = {detail:'تفصيلي (كل الحالات)', byTech:'ملخص حسب الفني', byTechDaily:'يومي لكل فني (تفصيلي)', byGov:'ملخص حسب المحافظة', byType:'ملخص حسب النوع', byGovType:'مصفوفة (محافظة × نوع)', byGovTypeList:'محافظة ونوع (قائمة)'}[d.view];
+  var viewName = {detail:'تفصيلي (كل الحالات)', byTech:'ملخص حسب الفني', byTechDaily:'يومي لكل فني (تفصيلي)', byDay:'ملخص حسب اليوم', byGov:'ملخص حسب المحافظة', byType:'ملخص حسب النوع', byGovType:'مصفوفة (محافظة × نوع)', byGovTypeList:'محافظة ونوع (قائمة)'}[d.view];
   var periodTitle = 'من ' + (d.from||'البداية') + ' إلى ' + (d.to||'اليوم');
   var techTitle = d.techFilter ? techName(d.techFilter) : 'جميع الفنيين';
   var stage = $('#pdf-stage');
@@ -2884,6 +2967,11 @@ function bind(){
   $('#btn-mark-all-present').addEventListener('click', markAllPresent);
 
   // Settings — techs
+  ['final','tryin','returned','repairs'].forEach(function(sec){
+    var inp = $('#search-tech-'+sec);
+    if (inp) inp.addEventListener('input', function(){ applyTechSearch(sec); });
+  });
+
   $('#btn-add-tech').addEventListener('click', addTech);
   $('#new-tech-name').addEventListener('keydown', function(e){ if (e.key==='Enter'){ e.preventDefault(); addTech(); } });
   $('#tech-manager-list').addEventListener('change', function(e){
@@ -3360,4 +3448,3 @@ if ('serviceWorker' in navigator){
 </script>
 </body>
 </html>
-
