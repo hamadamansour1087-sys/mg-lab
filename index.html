@@ -103,6 +103,10 @@ a.btn{text-decoration:none}
 
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--sheet);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-weight:600;color:inherit}
+.tech-drop{position:absolute;top:calc(100% + 4px);right:0;left:0;z-index:80;background:var(--sheet);border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 24px rgba(0,0,0,.15);max-height:44vh;overflow:auto;padding:4px}
+.tech-drop .chip{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;border-bottom:1px solid var(--border);border-radius:8px;background:transparent;padding:9px 10px;font-weight:600;color:inherit;cursor:pointer;text-align:right}
+.tech-drop .chip:last-of-type{border-bottom:0}
+.tech-drop .chip:hover{background:rgba(127,127,127,.15)}
 .chip[aria-pressed=true]{background:var(--primary);color:#fff;border-color:var(--primary)}
 .chip b{background:var(--primary-light);color:var(--primary);padding:1px 7px;border-radius:4px;font-family:var(--f-mono)}
 .chip[aria-pressed=true] b{background:#fff;color:var(--primary)}
@@ -315,10 +319,9 @@ html[data-theme="dark"] #pdf-stage{--primary:#0e4975;--primary-light:#e6f0f8;--a
 <main>
 
 <section id="v-final" class="view">
-  <div class="no-print" style="margin:0 0 6px"><input id="search-tech-final" type="text" placeholder="🔎 ابحث عن فني بالاسم..." style="width:100%;max-width:300px;padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--sheet);color:var(--ink);font-family:var(--f-body);font-size:.95rem"></div>
-  <div class="no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-    <span class="lbl" style="font-size:.95rem;margin:0;color:var(--ink)">اسم الفني /</span>
-    <div id="tech-chips-final" class="chips"></div>
+  <div class="no-print" style="margin:0 0 6px;position:relative;max-width:340px">
+    <input id="search-tech-final" type="text" placeholder="🔎 اكتب اسم الفني واختره من القائمة..." autocomplete="off" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--sheet);color:var(--ink);font-family:var(--f-body);font-size:.95rem">
+    <div id="tech-chips-final" class="tech-drop" hidden></div>
   </div>
   <form id="form-final" class="composer no-print" novalidate autocomplete="off">
     <div class="full" style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px;flex-wrap:wrap;gap:6px">
@@ -371,10 +374,9 @@ html[data-theme="dark"] #pdf-stage{--primary:#0e4975;--primary-light:#e6f0f8;--a
 </section>
 
 <section id="v-tryin" class="view" hidden>
-  <div class="no-print" style="margin:0 0 6px"><input id="search-tech-tryin" type="text" placeholder="🔎 ابحث عن فني بالاسم..." style="width:100%;max-width:300px;padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--sheet);color:var(--ink);font-family:var(--f-body);font-size:.95rem"></div>
-  <div class="no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-    <span class="lbl" style="font-size:.95rem;margin:0;color:var(--ink)">اسم الفني /</span>
-    <div id="tech-chips-tryin" class="chips"></div>
+  <div class="no-print" style="margin:0 0 6px;position:relative;max-width:340px">
+    <input id="search-tech-tryin" type="text" placeholder="🔎 اكتب اسم الفني واختره من القائمة..." autocomplete="off" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--sheet);color:var(--ink);font-family:var(--f-body);font-size:.95rem">
+    <div id="tech-chips-tryin" class="tech-drop" hidden></div>
   </div>
   <form id="form-tryin" class="composer no-print" novalidate autocomplete="off">
     <div class="full" style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px;flex-wrap:wrap;gap:6px">
@@ -424,10 +426,9 @@ html[data-theme="dark"] #pdf-stage{--primary:#0e4975;--primary-light:#e6f0f8;--a
 </section>
 
 <section id="v-returned" class="view" hidden>
-  <div class="no-print" style="margin:0 0 6px"><input id="search-tech-returned" type="text" placeholder="🔎 ابحث عن فني بالاسم..." style="width:100%;max-width:300px;padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--sheet);color:var(--ink);font-family:var(--f-body);font-size:.95rem"></div>
-  <div class="no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-    <span class="lbl" style="font-size:.95rem;margin:0;color:var(--ink)">الفني المستلم /</span>
-    <div id="tech-chips-returned" class="chips"></div>
+  <div class="no-print" style="margin:0 0 6px;position:relative;max-width:340px">
+    <input id="search-tech-returned" type="text" placeholder="🔎 اكتب اسم الفني المستلم واختره..." autocomplete="off" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--sheet);color:var(--ink);font-family:var(--f-body);font-size:.95rem">
+    <div id="tech-chips-returned" class="tech-drop" hidden></div>
   </div>
   <form id="form-returned" class="composer no-print" novalidate autocomplete="off">
     <div class="full" style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px;flex-wrap:wrap;gap:6px">
@@ -477,10 +478,9 @@ html[data-theme="dark"] #pdf-stage{--primary:#0e4975;--primary-light:#e6f0f8;--a
 </section>
 
 <section id="v-repairs" class="view" hidden>
-  <div class="no-print" style="margin:0 0 6px"><input id="search-tech-repairs" type="text" placeholder="🔎 ابحث عن فني بالاسم..." style="width:100%;max-width:300px;padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--sheet);color:var(--ink);font-family:var(--f-body);font-size:.95rem"></div>
-  <div class="no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-    <span class="lbl" style="font-size:.95rem;margin:0;color:var(--ink)">الفني المسؤول /</span>
-    <div id="tech-chips-repairs" class="chips"></div>
+  <div class="no-print" style="margin:0 0 6px;position:relative;max-width:340px">
+    <input id="search-tech-repairs" type="text" placeholder="🔎 اكتب اسم الفني المسؤول واختره..." autocomplete="off" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--sheet);color:var(--ink);font-family:var(--f-body);font-size:.95rem">
+    <div id="tech-chips-repairs" class="tech-drop" hidden></div>
   </div>
   <form id="form-repairs" class="composer no-print" novalidate autocomplete="off">
     <div class="full" style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px;flex-wrap:wrap;gap:6px">
@@ -1164,15 +1164,32 @@ function resetForm(section){
 /* ============================================================
    RENDER
    ============================================================ */
-var TECH_SEARCH = {final:'', tryin:'', returned:'', repairs:''};
-function applyTechSearch(section){
+function openTechDrop(section, showAll){
+  var box = $('#tech-chips-'+section), inp = $('#search-tech-'+section);
+  if (!box || !inp) return;
+  box.hidden = false;
+  applyTechSearch(section, showAll ? '' : null);
+}
+function closeTechDrop(section){
+  var box = $('#tech-chips-'+section), inp = $('#search-tech-'+section);
+  if (!box) return;
+  box.hidden = true;
+  if (inp && document.activeElement !== inp) inp.value = S.techId ? techName(S.techId) : '';
+}
+function applyTechSearch(section, qOverride){
   var box = $('#tech-chips-'+section); var inp = $('#search-tech-'+section);
   if (!box || !inp) return;
-  var q = norm(inp.value || '');
+  var q = norm(qOverride != null ? qOverride : (inp.value || ''));
+  var visible = 0, total = 0;
   [].forEach.call(box.querySelectorAll('.chip'), function(ch){
+    total++;
     var nm = ch.getAttribute('data-name') || ch.textContent;
-    ch.style.display = (!q || norm(nm).indexOf(q) > -1) ? '' : 'none';
+    var show = (!q || norm(nm).indexOf(q) > -1);
+    ch.style.display = show ? '' : 'none';
+    if (show) visible++;
   });
+  var hint = $('#tech-drop-hint-'+section);
+  if (hint) hint.style.display = (!visible && total) ? '' : 'none';
 }
 
 function renderSection(section){
@@ -1187,10 +1204,14 @@ function renderChipsFor(section){
   var list = listFor(section);
   var chips = activeTechs().map(function(t){
     var u = sumUnits(list.filter(function(c){ return c.techId===t.id && c.date===S.date; }));
-    return '<button type="button" class="chip" data-tech="'+esc(t.id)+'" data-name="'+esc(t.name)+'" aria-pressed="'+(t.id===S.techId)+'">'+esc(t.name)+(u?' <b>'+u+'</b>':'')+'</button>';
+    return '<button type="button" class="chip" data-tech="'+esc(t.id)+'" data-name="'+esc(t.name)+'" aria-pressed="'+(t.id===S.techId)+'"><span>'+(t.id===S.techId?'✓ ':'')+esc(t.name)+'</span>'+(u?'<b class="muted">'+u+'</b>':'')+'</button>';
   }).join('');
-  chipBox.innerHTML = chips || '<span class="muted">أضف الفنيين من الإعدادات</span>';
-  applyTechSearch(section);
+  chipBox.innerHTML = chips
+    ? chips + '<div id="tech-drop-hint-'+section+'" class="muted" style="display:none;padding:8px 10px;font-size:.85rem">لا يوجد فني بهذا الاسم</div>'
+    : '<span class="muted">أضف الفنيين من الإعدادات</span>';
+  var sInp = $('#search-tech-'+section);
+  if (sInp && document.activeElement !== sInp) sInp.value = S.techId ? techName(S.techId) : '';
+  if (!chipBox.hidden) applyTechSearch(section);
 
   if (section==='final'){
     $('#type-chips-final').innerHTML = S.typesFinal.map(function(ty){
@@ -2868,10 +2889,15 @@ function bind(){
   $('#d-next').addEventListener('click', function(){ setDate(addDays(S.date, 1)); });
   $('#d-today').addEventListener('click', function(){ setDate(todayLocal()); });
 
-  // Tech chips — filter to .chip[data-tech] only so attendance buttons don't trigger
+  // Tech dropdown rows (.chip[data-tech]) — attendance buttons have no .chip class
   document.body.addEventListener('click', function(e){
     var b = e.target.closest('.chip[data-tech]');
-    if (b) setTech(b.dataset.tech);
+    if (!b) return;
+    setTech(b.dataset.tech);
+    ['final','tryin','returned','repairs'].forEach(function(sec){
+      var inp = $('#search-tech-'+sec); if (inp) inp.value = techName(S.techId);
+      var box = $('#tech-chips-'+sec); if (box) box.hidden = true;
+    });
   });
 
   // Type/Action/Reason chips
@@ -2966,10 +2992,28 @@ function bind(){
   });
   $('#btn-mark-all-present').addEventListener('click', markAllPresent);
 
-  // Settings — techs
+  // Tech search-select dropdowns
   ['final','tryin','returned','repairs'].forEach(function(sec){
-    var inp = $('#search-tech-'+sec);
-    if (inp) inp.addEventListener('input', function(){ applyTechSearch(sec); });
+    var inp = $('#search-tech-'+sec), box = $('#tech-chips-'+sec);
+    if (!inp || !box) return;
+    inp.addEventListener('focus', function(){ try{ inp.select(); }catch(_){ } openTechDrop(sec, true); });
+    inp.addEventListener('input', function(){ openTechDrop(sec); });
+    inp.addEventListener('blur', function(){ setTimeout(function(){ closeTechDrop(sec); }, 140); });
+    inp.addEventListener('keydown', function(e){
+      if (e.key === 'Escape'){ closeTechDrop(sec); return; }
+      if (e.key === 'Enter'){
+        e.preventDefault();
+        var first = null;
+        [].some.call(box.querySelectorAll('.chip[data-tech]'), function(c){
+          if (c.style.display !== 'none'){ first = c; return true; } return false;
+        });
+        if (first){ setTech(first.dataset.tech); inp.value = techName(S.techId); closeTechDrop(sec); }
+      }
+    });
+    box.addEventListener('mousedown', function(e){
+      var b = e.target.closest('.chip[data-tech]');
+      if (b) e.preventDefault();
+    });
   });
 
   $('#btn-add-tech').addEventListener('click', addTech);
