@@ -845,8 +845,10 @@ service cloud.firestore {
         </label>
       </div>
       <div class="pm-actions">
-        <label class="btn" for="pm-file">📷 اختر / صوّر الكشف</label>
+        <label class="btn" for="pm-file">📷 تصوير بالكاميرا</label>
         <input id="pm-file" type="file" accept="image/*" capture="environment" hidden>
+        <label class="btn" for="pm-file-pick">📁 اختيار صورة محفوظة</label>
+        <input id="pm-file-pick" type="file" accept="image/*" hidden>
         <button type="button" class="btn primary" id="pm-read" disabled>قراءة الصورة</button>
         <span id="pm-filemeta" class="muted"></span>
       </div>
@@ -3057,7 +3059,7 @@ function openPhotoModal(section){
   }).join('');
   $('#pm-tech').innerHTML = opts || '<option value="">لا يوجد فنيين — أضفهم من الإعدادات</option>';
   $('#pm-date').value = S.date;
-  $('#pm-file').value = '';
+  $('#pm-file').value = ''; $('#pm-file-pick').value = '';
   $('#pm-preview').hidden = true; $('#pm-preview').removeAttribute('src');
   $('#pm-filemeta').textContent = '';
   $('#pm-read').disabled = true;
@@ -3338,7 +3340,7 @@ function setupPhotoImport(){
   document.addEventListener('keydown', function(e){
     if (e.key==='Escape' && !$('#photo-modal').hidden) closePhotoModal();
   });
-  $('#pm-file').addEventListener('change', function(e){
+  function pmHandleFile(e){
     var f = e.target.files && e.target.files[0];
     if (!f) return;
     $('#pm-filemeta').textContent = 'جارٍ تجهيز الصورة...';
@@ -3352,7 +3354,9 @@ function setupPhotoImport(){
       $('#pm-filemeta').textContent = 'تعذر فتح الصورة';
       $('#pm-read').disabled = true;
     });
-  });
+  }
+  $('#pm-file').addEventListener('change', pmHandleFile);
+  $('#pm-file-pick').addEventListener('change', pmHandleFile);
   $('#pm-read').addEventListener('click', pmRead);
   $('#pm-save').addEventListener('click', pmSave);
   $('#pm-section').addEventListener('change', function(e){
