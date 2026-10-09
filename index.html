@@ -853,6 +853,7 @@ service cloud.firestore {
         <label class="btn" for="pm-file-pick">📁 اختيار صورة محفوظة</label>
         <input id="pm-file-pick" type="file" accept="image/*" hidden>
         <button type="button" class="btn" id="pm-rec">🎙️ تسجيل صوتي</button>
+        <button type="button" class="btn" id="pm-speech">🎙️ صوت بدون مفتاح</button>
         <span id="pm-recmeta" class="muted"></span>
         <button type="button" class="btn primary" id="pm-read" disabled>قراءة الصورة</button>
         <span id="pm-filemeta" class="muted"></span>
@@ -3079,6 +3080,7 @@ function closePhotoModal(){
   $('#photo-modal').hidden = true;
   PM_STATE.b64 = null; PM_STATE.rows = [];
   try{ if (PM_REC.active) pmRecStop(); }catch(e){}
+  try{ if (PM_SPEECH.active) pmSpeechKill(true); }catch(e){}
 }
 function renderKeyBox(){
   var box = $('#pm-keybox');
@@ -3094,7 +3096,7 @@ function renderKeyBox(){
     box.innerHTML = '<div>لتشغيل القراءة الآلية محتاج مفتاح مجاني من Google: '+
       '<b>1)</b> افتح <span class="mono" dir="ltr">aistudio.google.com/apikey</span> '+
       '<b>2)</b> اعمل Create API key '+
-      '<b>3)</b> الصقه هنا — المفتاح يُخزَّن في جهازك فقط ولا يُكتب في الكود ولا يُرفع لأي مكان غير Google.</div>'+
+      '<b>3)</b> الصقه هنا — المفتاح يُخزَّن في جهازك فقط ولا يُكتب في الكود ولا يُرفع لأي مكان غير Google.</div><div class="muted" style="margin-top:4px">ملاحظة: زر «صوت بدون مفتاح» بيشتغل من غير مفتاح خالص (بجودة أقل من القراءة الذكية).</div>'+
       '<div class="pm-keyrow"><input id="pm-key-in" type="password" placeholder="AIza..." autocomplete="off">'+
       '<input id="pm-model-in" type="text" value="'+esc(pmGetModel())+'" title="اسم الموديل" style="flex:0 1 190px" dir="ltr">'+
       '<button type="button" class="btn primary sm" id="pm-key-save">حفظ المفتاح</button></div>';
@@ -3217,6 +3219,7 @@ function pmRecKillStream(){
 function pmRecToggle(){
   if (PM_REC.active){ pmRecStop(); return; }
   if (!pmRecSupported()){ $('#pm-recmeta').textContent = 'المتصفح ده مش بيدعم التسجيل الصوتي — استخدم Chrome'; return; }
+  if (PM_SPEECH.active) pmSpeechKill(true);
   var st = $('#pm-status'); st.className = 'pm-status'; st.textContent = '';
   navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
     PM_REC.stream = stream; PM_REC.chunks = [];
@@ -3348,6 +3351,211 @@ function pmVoiceRead(b64){
     st.textContent = 'اتفرغ '+rows.length+' حالة — راجع الجدول وعدّل أي اسم أو رقم قبل الحفظ';
     toast('اتفرغ '+rows.length+' حالة — راجعهم قبل الحفظ');
   });
+}
+/* ===== صوت بدون مفتاح: التعريف المدمج في المتصفح + محلل محلي (Task 24) ===== */
+var PM_SPEECH = {sr:null, active:false, restart:false, silent:false, finalTxt:'', timer:null, t0:0};
+function pmSpeechSupported(){ return !!(window.SpeechRecognition||window.webkitSpeechRecognition); }
+function pmSpeechStopUI(){
+  PM_SPEECH.active = false;
+  if (PM_SPEECH.timer){ clearInterval(PM_SPEECH.timer); PM_SPEECH.timer = null; }
+  var b = $('#pm-speech');
+  if (b){ b.classList.remove('pm-rec-on'); b.innerHTML = '🎙️ صوت بدون مفتاح'; }
+}
+function pmSpeechKill(silent){
+  if (silent) PM_SPEECH.silent = true;
+  PM_SPEECH.restart = false;
+  try{ if (PM_SPEECH.sr) PM_SPEECH.sr.stop(); }catch(e){}
+}
+function pmSpeechToggle(){
+  if (PM_SPEECH.active){ pmSpeechKill(false); return; }
+  if (PM_REC.active) pmRecStop();
+  if (!pmSpeechSupported()){ $('#pm-recmeta').textContent = 'المتصفح ده مش بيدعم التعريف الصوتي المدمج — افتح البرنامج بـ Google Chrome'; return; }
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var r = new SR();
+  r.lang = 'ar-EG'; r.continuous = true; r.interimResults = true;
+  PM_SPEECH.finalTxt = '';
+  r.onresult = function(e){
+    var fin = '';
+    for (var i=0;i<e.results.length;i++){ if (e.results[i].isFinal) fin += e.results[i][0].transcript+' '; }
+    if (fin.trim()) PM_SPEECH.finalTxt = fin.trim();
+    var live = PM_SPEECH.finalTxt;
+    for (var j=e.resultIndex;j<e.results.length;j++){ if (!e.results[j].isFinal) live += ' '+e.results[j][0].transcript; }
+    var m = $('#pm-recmeta');
+    if (m) m.textContent = 'بسمعك... '+live.trim().substring(0,90);
+  };
+  r.onerror = function(e){
+    if (e && (e.error==='not-allowed'||e.error==='service-not-allowed')){
+      pmSpeechKill(true);
+      var m = $('#pm-recmeta');
+      if (m) m.textContent = 'مسموحش بالميكروفون — اسمح للموقع باستخدام الميكروفون وجرب تاني';
+    } else if (e && e.error==='network'){
+      var m2 = $('#pm-recmeta');
+      if (m2) m2.textContent = 'التعريف الصوتي محتاج إنترنت شغال — اتأكد من الاتصال';
+    }
+  };
+  r.onend = function(){
+    if (PM_SPEECH.restart){ try{ r.start(); }catch(err){} return; }
+    var wasSilent = PM_SPEECH.silent;
+    PM_SPEECH.silent = false;
+    pmSpeechStopUI();
+    if (!wasSilent) pmSpeechFinish();
+  };
+  PM_SPEECH.sr = r; PM_SPEECH.restart = true; PM_SPEECH.t0 = Date.now();
+  try{ r.start(); }catch(err){ $('#pm-recmeta').textContent = 'تعذر بدء السماع — جرب تاني'; return; }
+  PM_SPEECH.active = true;
+  var b = $('#pm-speech');
+  b.classList.add('pm-rec-on');
+  b.innerHTML = '<span class="pm-rec-dot"></span>إيقاف السماع';
+  $('#pm-recmeta').textContent = 'بسمعك... اتكلم بوضوح: رقم الحالة، اسم الطبيب، الوحدات، النوع — ولما تخلص اضغط إيقاف السماع';
+  PM_SPEECH.timer = setInterval(function(){
+    if (Date.now()-PM_SPEECH.t0 > 240000) pmSpeechKill(false);
+  }, 1000);
+}
+function pmSpeechFinish(){
+  if ($('#photo-modal').hidden) return;
+  var txt = (PM_SPEECH.finalTxt||'').trim();
+  if (!txt){ $('#pm-recmeta').textContent = 'ماسمعش ولا كلمة — جرب تاني وقرب من الميكروفون'; return; }
+  var rows = pmParseTranscript(txt);
+  if (!rows.length){
+    $('#pm-recmeta').textContent = 'معرفتش أفصل حالات من الكلام — جرب تاني وقول كل حالة: الرقم ثم الطبيب ثم الوحدات ثم النوع';
+    return;
+  }
+  PM_STATE.rows = rows;
+  pmRenderRows();
+  var st = $('#pm-status');
+  st.className = 'pm-status ok';
+  st.textContent = 'اتفرغ '+rows.length+' حالة من الصوت (بدون مفتاح) — راجع الجدول وعدّل أي خلية قبل الحفظ';
+  $('#pm-recmeta').textContent = '';
+  toast('اتفرغ '+rows.length+' حالة — راجعهم قبل الحفظ');
+}
+function pmSynTypeOf(sn){
+  if (sn.indexOf('زرك')===0 || sn.indexOf('زروك')===0) return 'زركون';
+  if (sn.indexOf('بورس')===0 || sn==='معدن') return 'بورسلين على معدن';
+  if (sn.indexOf('ايم')===0) return 'إيماكس';
+  if (sn==='بيمما' || sn==='بيميه' || sn==='pmma') return 'PMMA';
+  if (sn==='vm' || sn==='فيام' || sn==='فيم') return 'VM';
+  return '';
+}
+function pmTypeAgainstOptions(canonical){
+  var opts = pmTypeOptions(PM_STATE.section);
+  var c = norm(canonical);
+  for (var i=0;i<opts.length;i++){ if (norm(opts[i])===c) return opts[i]; }
+  for (var j=0;j<opts.length;j++){
+    var first = norm(opts[j]).split(' ')[0];
+    if (first.length>2 && c.indexOf(first)===0) return opts[j];
+  }
+  return canonical;
+}
+function pmSpeechType(toks, i){
+  var sn = pmNorm2(toks[i]);
+  if (sn==='بروفا' && toks[i+1]){
+    var sn2 = pmNorm2(toks[i+1]);
+    if (sn2==='معدن' || sn2.indexOf('معدن')===0) return {type:pmTypeAgainstOptions('بروفا معدن'), skip:1};
+    if (sn2==='بيمما' || sn2==='pmma' || sn2==='بيميه') return {type:pmTypeAgainstOptions('بروفا PMMA'), skip:1};
+  }
+  var t = pmSynTypeOf(sn);
+  if (t) return {type:pmTypeAgainstOptions(t), skip:0};
+  return null;
+}
+function pmDocFromWindow(toks, i, w){
+  if (i+w > toks.length) return null;
+  var phrase = toks.slice(i, i+w).join(' ');
+  var k = nameKey(phrase);
+  if (!k || k.length<3) return null;
+  for (var d=0; d<S.doctors.length; d++){
+    if (nameKey(S.doctors[d].name)===k) return S.doctors[d].name;
+  }
+  return null;
+}
+function pmDocPartial(toks, i, w){
+  if (i+w > toks.length) return null;
+  var pn = norm(toks.slice(i, i+w).join(' '));
+  if (pn.length < 5) return null;
+  for (var e=0; e<S.doctors.length; e++){
+    var dn = norm(S.doctors[e].name);
+    if (dn.length>3 && (dn.indexOf(pn)>-1 || pn.indexOf(dn)>-1)) return S.doctors[e].name;
+  }
+  return null;
+}
+var PM_STOPW = ['و','في','عند','مع','رقم','حالة','الحالة','والحالة','كمان','برضه','يعني','بتاع','خلص','خلصنا','تمام','يا'];
+function pmNorm2(s){ return norm(s); }
+function pmParseTranscript(txt){
+  txt = latinDigits(String(txt==null?'':txt));
+  var toks = txt.replace(/[،,.؛:!?؟]/g,' ').split(/\s+/).filter(function(t){ return t.length; });
+  var curMonth = monthOf($('#pm-date').value || todayLocal());
+  var UNITS_W = ['وحده','وحدتين','وحدات'];
+  var rows = [];
+  var cur = null;
+  function isNum(t){ return /^\d{1,5}$/.test(t); }
+  function fresh(){ if (!cur) cur = {caseNo:'', doctor:'', units:'', type:'', note:''}; return cur; }
+  function push(){ if (cur && (cur.caseNo || (cur.doctor && cur.units!==''))) rows.push(cur); cur = null; }
+  function newCase(no){
+    if (cur && !cur.caseNo && cur.doctor==='' && cur.units==='' && !cur.type){ cur.caseNo = no; return; }
+    push();
+    cur = {caseNo:no, doctor:'', units:'', type:'', note:''};
+  }
+  for (var i=0;i<toks.length;i++){
+    var t = toks[i];
+    var typ = pmSpeechType(toks, i);
+    if (typ){
+      fresh();
+      if (!cur.type) cur.type = typ.type;
+      else cur.note += (cur.note?' ':'')+typ.type;
+      i += typ.skip;
+      continue;
+    }
+    var sn = pmNorm2(t);
+    if (UNITS_W.indexOf(sn)>-1){
+      fresh();
+      if (cur.units===''){
+        if (sn==='وحدتين') cur.units = 2;
+        else if (i>0 && isNum(toks[i-1])) cur.units = +toks[i-1];
+        else if (sn==='وحده') cur.units = 1;
+      }
+      continue;
+    }
+    var mm = /^(\d{1,2})[-\/](\d{1,5})$/.exec(t);
+    if (mm && +mm[1]>=1 && +mm[1]<=12){ newCase((+mm[1])+'-'+(+mm[2])); continue; }
+    if (isNum(t)){
+      var v = +t;
+      var nextU = toks[i+1] && UNITS_W.indexOf(pmNorm2(toks[i+1]))>-1;
+      if (nextU) continue;
+      var prevU = i>0 && UNITS_W.indexOf(pmNorm2(toks[i-1]))>-1;
+      if (prevU) continue;
+      if (v>=1 && v<=12 && toks[i+1]!=null && isNum(toks[i+1])){ newCase(v+'-'+(+toks[i+1])); i++; continue; }
+      if (v>=13 && v<=9999){
+        if (cur && !cur.caseNo && cur.doctor==='' && cur.units==='' && !cur.type) cur.caseNo = curMonth+'-'+v;
+        else newCase(curMonth+'-'+v);
+        continue;
+      }
+      fresh();
+      if (cur.units==='') cur.units = v;
+      continue;
+    }
+    var matched = null, mw = 0;
+    for (var w=4; w>=1; w--){
+      var nm = pmDocFromWindow(toks, i, w);
+      if (nm){ matched = nm; mw = w; break; }
+    }
+    if (!matched){
+      for (var w2=2; w2>=1; w2--){
+        var np = pmDocPartial(toks, i, w2);
+        if (np){ matched = np; mw = w2; break; }
+      }
+    }
+    if (matched){
+      fresh();
+      if (!cur.doctor) cur.doctor = matched;
+      else cur.note += (cur.note?' ':'')+matched;
+      i += mw-1;
+      continue;
+    }
+    if (cur && (cur.caseNo || cur.doctor || cur.type)){
+      if (PM_STOPW.indexOf(sn)===-1) cur.note += (cur.note?' ':'')+t;
+    }
+  }
+  push();
+  return rows;
 }
 function pmParseJson(txt){
   txt = String(txt||'').trim();
@@ -3509,6 +3717,7 @@ function setupPhotoImport(){
   };
   window.__pmRows = function(){ return PM_STATE.rows; };
   window.__pmVoiceBlob = function(blob){ PM_REC.chunks = [blob]; PM_REC.t0 = Date.now()-3000; pmRecFinish(); };
+  window.__pmSpeechText = function(txt){ PM_SPEECH.finalTxt = txt; pmSpeechFinish(); };
   $$('[data-photo]').forEach(function(b){
     b.addEventListener('click', function(){ openPhotoModal(b.dataset.photo); });
   });
@@ -3534,6 +3743,7 @@ function setupPhotoImport(){
   }
   $('#pm-file').addEventListener('change', pmHandleFile);
   $('#pm-file-pick').addEventListener('change', pmHandleFile);
+  $('#pm-speech').addEventListener('click', pmSpeechToggle);
   $('#pm-rec').addEventListener('click', pmRecToggle);
   $('#pm-read').addEventListener('click', pmRead);
   $('#pm-save').addEventListener('click', pmSave);
