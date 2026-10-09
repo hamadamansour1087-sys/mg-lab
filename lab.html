@@ -157,6 +157,41 @@ a.btn{text-decoration:none}
 .reassign-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;background:var(--warn-soft);border-bottom:2px solid var(--warn);font-weight:700;color:var(--warn);font-size:.95rem}
 .reassign-banner .mono{font-size:1rem}
 
+/* ===== تسجيل من صورة (AI) ===== */
+#photo-modal{position:fixed;inset:0;z-index:200;background:rgba(15,32,48,.55);display:flex;align-items:flex-start;justify-content:center;padding:18px;overflow:auto}
+#photo-modal[hidden]{display:none}
+.pm-card{background:var(--paper);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.3);width:min(960px,100%);max-height:calc(100vh - 36px);display:flex;flex-direction:column;overflow:hidden}
+.pm-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--primary);color:#fff;font-size:1.05rem;flex:0 0 auto}
+.pm-x{background:transparent;border:0;color:#fff;font-size:1.15rem;cursor:pointer;padding:4px 10px;border-radius:6px}
+.pm-body{padding:14px 16px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.pm-grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.pm-lbl{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:.88rem}
+.pm-lbl select,.pm-lbl input{min-height:38px;border:1px solid var(--border);border-radius:8px;padding:6px 10px;background:var(--sheet);color:var(--ink);font-family:var(--f-body)}
+.pm-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pm-preview{max-width:100%;max-height:240px;border:1px solid var(--border-strong);border-radius:8px;object-fit:contain;background:#fff}
+.pm-keybox{border:1px dashed var(--border-strong);border-radius:10px;padding:10px 12px;font-size:.9rem;display:flex;flex-direction:column;gap:8px}
+.pm-keybox b{color:var(--primary)}
+.pm-keyrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pm-keyrow input{flex:1 1 260px;min-height:38px;border:1px solid var(--border);border-radius:8px;padding:6px 10px;background:var(--sheet);color:var(--ink);font-family:var(--f-mono);direction:ltr;text-align:left}
+.pm-status{font-weight:700;font-size:.92rem}
+.pm-status.err{color:var(--bad)}
+.pm-status.ok{color:var(--ok)}
+.pm-spin{display:inline-block;width:15px;height:15px;border:3px solid var(--primary-light);border-top-color:var(--primary);border-radius:50%;animation:mgspin 1s linear infinite;vertical-align:-3px;margin-inline-end:6px}
+.pm-tblwrap{overflow:auto;border:1px solid var(--border-strong);border-radius:8px}
+.pm-table{width:100%;border-collapse:collapse;font-size:.9rem;min-width:640px}
+.pm-table th{background:#e9eef2;padding:8px 6px;font-size:.82rem;border-bottom:2px solid var(--border-strong);white-space:nowrap}
+.pm-table td{padding:4px 6px;border-bottom:1px solid var(--border);vertical-align:middle}
+.pm-table tr:last-child td{border-bottom:0}
+.pm-table input{width:100%;min-height:34px;border:1px solid var(--border);border-radius:6px;padding:4px 8px;background:var(--sheet);color:var(--ink);font-family:var(--f-body);font-size:.9rem}
+.pm-table .pm-case{font-family:var(--f-mono);direction:ltr;text-align:center}
+.pm-table .pm-units{width:70px;text-align:center;font-family:var(--f-mono)}
+.pm-rowdel{background:var(--bad-soft);color:var(--bad);border:1px solid var(--bad);border-radius:6px;min-height:30px;padding:0 8px;cursor:pointer;font-weight:700}
+.pm-match{font-size:.78rem;font-weight:700;white-space:nowrap}
+.pm-match.ok{color:var(--ok)}
+.pm-match.new{color:var(--warn)}
+.pm-match.bad{color:var(--bad)}
+.pm-rowbad{background:#fff5f5}
+
 .stats-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
 .stat-card{background:var(--sheet);border:1px solid var(--border);border-radius:8px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .stat-card.featured{border:2px solid var(--primary);background:linear-gradient(to bottom,#fff,var(--primary-light))}
@@ -389,7 +424,7 @@ html[data-theme="dark"] #pdf-stage{--primary:#0e4975;--primary-light:#e6f0f8;--a
   </form>
   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
     <h3>كشف الإنتاج النهائي للفني اليوم</h3>
-    <button type="button" class="btn no-print" data-print="final">🖨️ طباعة كشف النهائي</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn no-print" data-photo="final">📷 تسجيل من صورة</button><button type="button" class="btn no-print" data-print="final">🖨️ طباعة كشف النهائي</button></div>
   </div>
   <div id="due-bar-final" class="no-print" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;background:var(--sheet);border:1px dashed var(--warn);border-radius:8px;padding:8px 12px"></div>
   <div id="due-list-final" class="no-print" hidden></div>
@@ -441,7 +476,7 @@ html[data-theme="dark"] #pdf-stage{--primary:#0e4975;--primary-light:#e6f0f8;--a
   </form>
   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
     <h3>كشف البروفات الخارجة اليوم</h3>
-    <button type="button" class="btn no-print" data-print="tryin">🖨️ طباعة كشف البروفات</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn no-print" data-photo="tryin">📷 تسجيل من صورة</button><button type="button" class="btn no-print" data-print="tryin">🖨️ طباعة كشف البروفات</button></div>
   </div>
   <div id="due-bar-tryin" class="no-print" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;background:var(--sheet);border:1px dashed var(--warn);border-radius:8px;padding:8px 12px"></div>
   <div id="due-list-tryin" class="no-print" hidden></div>
@@ -493,7 +528,7 @@ html[data-theme="dark"] #pdf-stage{--primary:#0e4975;--primary-light:#e6f0f8;--a
   </form>
   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
     <h3>كشف الحالات الراجعة من بروفا اليوم</h3>
-    <button type="button" class="btn no-print" data-print="returned">🖨️ طباعة كشف الراجع</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn no-print" data-photo="returned">📷 تسجيل من صورة</button><button type="button" class="btn no-print" data-print="returned">🖨️ طباعة كشف الراجع</button></div>
   </div>
   <div id="due-bar-returned" class="no-print" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;background:var(--sheet);border:1px dashed var(--warn);border-radius:8px;padding:8px 12px"></div>
   <div id="due-list-returned" class="no-print" hidden></div>
@@ -545,7 +580,7 @@ html[data-theme="dark"] #pdf-stage{--primary:#0e4975;--primary-light:#e6f0f8;--a
   </form>
   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
     <h3>سجل الحالات الواردة للإعادة والتصليح اليوم</h3>
-    <button type="button" class="btn no-print" data-print="repairs">🖨️ طباعة كشف التصليحات</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn no-print" data-photo="repairs">📷 تسجيل من صورة</button><button type="button" class="btn no-print" data-print="repairs">🖨️ طباعة كشف التصليحات</button></div>
   </div>
   <div id="due-bar-repairs" class="no-print" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;background:var(--sheet);border:1px dashed var(--warn);border-radius:8px;padding:8px 12px"></div>
   <div id="due-list-repairs" class="no-print" hidden></div>
@@ -784,6 +819,47 @@ service cloud.firestore {
 <div id="print-sheet" dir="rtl" aria-hidden="true"></div>
 
 <div id="pdf-stage" dir="rtl" aria-hidden="true"></div>
+
+<div id="photo-modal" dir="rtl" hidden>
+  <div class="pm-card">
+    <div class="pm-head">
+      <b>📷 تسجيل حالات من صورة الكشف</b>
+      <button type="button" class="pm-x" id="pm-close" aria-label="إغلاق">✕</button>
+    </div>
+    <div class="pm-body">
+      <div id="pm-keybox" class="pm-keybox"></div>
+      <div class="pm-grid3">
+        <label class="pm-lbl">القسم
+          <select id="pm-section">
+            <option value="final">النهائي</option>
+            <option value="tryin">البروفات</option>
+            <option value="returned">راجع بروفا</option>
+            <option value="repairs">التصليحات</option>
+          </select>
+        </label>
+        <label class="pm-lbl">الفني
+          <select id="pm-tech"></select>
+        </label>
+        <label class="pm-lbl">التاريخ
+          <input type="date" id="pm-date">
+        </label>
+      </div>
+      <div class="pm-actions">
+        <label class="btn" for="pm-file">📷 اختر / صوّر الكشف</label>
+        <input id="pm-file" type="file" accept="image/*" capture="environment" hidden>
+        <button type="button" class="btn primary" id="pm-read" disabled>قراءة الصورة</button>
+        <span id="pm-filemeta" class="muted"></span>
+      </div>
+      <img id="pm-preview" class="pm-preview" alt="معاينة الصورة" hidden>
+      <div id="pm-status" class="pm-status"></div>
+      <div id="pm-result"></div>
+      <div id="pm-savebar" hidden style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <button type="button" class="btn primary" id="pm-save">تسجيل الصفوف الصالحة</button>
+        <span id="pm-savecount" class="muted"></span>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -2959,6 +3035,364 @@ function downloadDocsTemplate(){
   }).catch(function(){ toast('تعذّر إنشاء النموذج'); });
 }
 
+
+/* ============================================================
+   PHOTO IMPORT — تسجيل حالات من صورة الكشف (قراءة آلية)
+   المفتاح يُخزَّن في localStorage الجهاز فقط ولا يُكتب في الكود.
+   ============================================================ */
+var PM_SECTIONS = ['final','tryin','returned','repairs'];
+var PM_LS_KEY = 'mg_ai_key';
+var PM_LS_MODEL = 'mg_ai_model';
+var PM_STATE = {section:'final', b64:null, rows:[]};
+
+function pmGetKey(){ try{ return localStorage.getItem(PM_LS_KEY)||''; }catch(e){ return ''; } }
+function pmGetModel(){ try{ return localStorage.getItem(PM_LS_MODEL)||'gemini-2.5-flash'; }catch(e){ return 'gemini-2.5-flash'; } }
+
+function openPhotoModal(section){
+  PM_STATE.section = PM_SECTIONS.indexOf(section)>-1 ? section : (S.tab||'final');
+  PM_STATE.b64 = null; PM_STATE.rows = [];
+  $('#pm-section').value = PM_STATE.section;
+  var opts = activeTechs().map(function(t){
+    return '<option value="'+esc(t.id)+'"'+(t.id===S.techId?' selected':'')+'>'+esc(t.name)+'</option>';
+  }).join('');
+  $('#pm-tech').innerHTML = opts || '<option value="">لا يوجد فنيين — أضفهم من الإعدادات</option>';
+  $('#pm-date').value = S.date;
+  $('#pm-file').value = '';
+  $('#pm-preview').hidden = true; $('#pm-preview').removeAttribute('src');
+  $('#pm-filemeta').textContent = '';
+  $('#pm-read').disabled = true;
+  $('#pm-status').textContent = ''; $('#pm-status').className = 'pm-status';
+  $('#pm-result').innerHTML = '';
+  $('#pm-savebar').hidden = true;
+  $('#pm-savecount').textContent = '';
+  renderKeyBox();
+  $('#photo-modal').hidden = false;
+}
+function closePhotoModal(){
+  $('#photo-modal').hidden = true;
+  PM_STATE.b64 = null; PM_STATE.rows = [];
+}
+function renderKeyBox(){
+  var box = $('#pm-keybox');
+  var key = pmGetKey();
+  if (key){
+    box.innerHTML = '<div class="pm-keyrow"><b>مفتاح الذكاء الاصطناعي محفوظ ✓</b>'+
+      '<span class="muted">الموديل: '+esc(pmGetModel())+'</span>'+
+      '<button type="button" class="btn sm" id="pm-key-change">تغيير المفتاح</button>'+
+      '<button type="button" class="btn sm danger" id="pm-key-remove">إزالة</button></div>';
+    $('#pm-key-change').addEventListener('click', function(){ try{ localStorage.removeItem(PM_LS_KEY); }catch(e){} renderKeyBox(); });
+    $('#pm-key-remove').addEventListener('click', function(){ try{ localStorage.removeItem(PM_LS_KEY); localStorage.removeItem(PM_LS_MODEL); }catch(e){} renderKeyBox(); });
+  } else {
+    box.innerHTML = '<div>لتشغيل القراءة الآلية محتاج مفتاح مجاني من Google: '+
+      '<b>1)</b> افتح <span class="mono" dir="ltr">aistudio.google.com/apikey</span> '+
+      '<b>2)</b> اعمل Create API key '+
+      '<b>3)</b> الصقه هنا — المفتاح يُخزَّن في جهازك فقط ولا يُكتب في الكود ولا يُرفع لأي مكان غير Google.</div>'+
+      '<div class="pm-keyrow"><input id="pm-key-in" type="password" placeholder="AIza..." autocomplete="off">'+
+      '<input id="pm-model-in" type="text" value="'+esc(pmGetModel())+'" title="اسم الموديل" style="flex:0 1 190px" dir="ltr">'+
+      '<button type="button" class="btn primary sm" id="pm-key-save">حفظ المفتاح</button></div>';
+    $('#pm-key-save').addEventListener('click', function(){
+      var v = $('#pm-key-in').value.trim();
+      if (v.length < 20){ toast('المفتاح شكله غير صحيح'); return; }
+      try{
+        localStorage.setItem(PM_LS_KEY, v);
+        localStorage.setItem(PM_LS_MODEL, $('#pm-model-in').value.trim()||'gemini-2.5-flash');
+      }catch(e){}
+      toast('تم حفظ المفتاح في الجهاز');
+      renderKeyBox();
+    });
+  }
+}
+function pmDownscale(file){
+  return new Promise(function(res, rej){
+    var img = new Image();
+    var url = URL.createObjectURL(file);
+    img.onload = function(){
+      try{
+        var max = 1600;
+        var w = img.naturalWidth, h = img.naturalHeight;
+        var k = Math.min(1, max/Math.max(w,h));
+        var c = document.createElement('canvas');
+        c.width = Math.round(w*k); c.height = Math.round(h*k);
+        var ctx = c.getContext('2d');
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,c.width,c.height);
+        ctx.drawImage(img,0,0,c.width,c.height);
+        var durl = c.toDataURL('image/jpeg',0.85);
+        URL.revokeObjectURL(url);
+        res(durl.split(',')[1]);
+      }catch(err){ URL.revokeObjectURL(url); rej(err); }
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error('تعذر فتح الصورة')); };
+    img.src = url;
+  });
+}
+function pmTypeOptions(section){
+  return section==='final' ? S.typesFinal : section==='tryin' ? TRYIN_TYPES : section==='returned' ? RETURNED_ACTIONS : REPAIR_REASONS;
+}
+function buildPhotoPrompt(section){
+  var typeList = pmTypeOptions(section);
+  var secName = {final:'الإنتاج النهائي', tryin:'خروج البروفة (تحت التجربة)', returned:'الحالات الراجعة من البروفة', repairs:'الإعادات والتصليحات'}[section];
+  var docNames = S.doctors.map(function(d){ return d.name; }).join(' ، ');
+  return 'أنت مساعد دقيق لإدخال بيانات كشوف معمل أسنان مصري بخط اليد. الصورة كشف يومي.\n'
+    +'استخرج كل صفوف الحالات غير المشطوبة وأعد النتيجة JSON فقط دون أي كلام إضافي، بالشكل:\n'
+    +'{"rows":[{"caseNo":"10-498","doctor":"اسم الطبيب","units":2,"type":"زركون","note":""}]}\n'
+    +'القواعد:\n'
+    +'1) القسم: '+secName+'.\n'
+    +'2) caseNo: رقم الحالة كما هو مكتوب (أرقام وشرطة فقط). لو الرقم من غير شهر اتركه كذلك (مثال: 498).\n'
+    +'3) doctor: اقرأ الاسم كما كُتب. لو الحروف غير واضحة طابقه مع أقرب اسم من أطباء المعمل دول: '+(docNames||'لا يوجد')+'. ممنوع اختراع اسم غير موجود في الورقة.\n'
+    +'4) units: عدد صحيح من عمود الوحدات — الرقم المكتوب قبل حرف النوع (مثال: 2P يعني units=2 و type=PMMA).\n'
+    +'5) type: حوّل الاختصار للاسم الكامل: P = PMMA ، M = بورسلين على معدن ، Z = زركون ، E = إيماكس ، V = VM. ولو النوع مكتوب بالاسم اكتبه كما هو. الأنواع المعتمدة: '+typeList.join(' ، ')+' — استخدم الأقرب منها.\n'
+    +'6) note: أي ملاحظة هامشية مرتبطة بالصف وإلا اتركها فارغة.\n'
+    +'7) تجاهل الصفوف المشطوبة والفارغة وأرقام التسلسل المطبوعة (1،2،3...).\n'
+    +'8) حوّل الأرقام العربية (٤٩٨) لإنجليزية (498).';
+}
+function callGemini(key, model, prompt, b64){
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent?key='+encodeURIComponent(key);
+  var gc = {temperature:0.1, maxOutputTokens:8192, response_mime_type:'application/json'};
+  if (/^(gemini-)?(2\.5|3)/.test(model)) gc.thinkingConfig = {thinkingBudget:0};
+  return fetch(url, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      contents:[{role:'user',parts:[{text:prompt},{inline_data:{mime_type:'image/jpeg',data:b64}}]}],
+      generationConfig: gc
+    })
+  }).then(function(r){
+    return r.json().then(function(j){
+      if (!r.ok){
+        var m = (j&&j.error&&j.error.message)||('HTTP '+r.status);
+        throw new Error(m);
+      }
+      return j;
+    });
+  }).then(function(j){
+    var txt = '';
+    try{ txt = (j.candidates[0].content.parts||[]).map(function(p){ return p.text||''; }).join(''); }catch(e){}
+    if (!txt) throw new Error('الموديل رجّع رد فاضي — جرب موديل تاني من خانة اسم الموديل');
+    return txt;
+  });
+}
+function pmParseJson(txt){
+  txt = String(txt||'').trim();
+  if (txt.indexOf('```') > -1) txt = txt.replace(/```[a-z]*\n?/gi,'').trim();
+  var m = txt.match(/\{[\s\S]*\}/);
+  if (m) txt = m[0];
+  var j = JSON.parse(txt);
+  if (Array.isArray(j)) return j;
+  if (Array.isArray(j.rows)) return j.rows;
+  return [];
+}
+function pmMatchDoc(name){
+  var k = nameKey(name||'');
+  if (!k) return {status:'bad', doc:null, fuzzy:false};
+  var exact = S.doctors.filter(function(d){ return nameKey(d.name)===k; });
+  if (exact.length) return {status:'ok', doc:exact[0], fuzzy:false};
+  var partial = S.doctors.filter(function(d){
+    var dn = norm(d.name);
+    return dn.length>2 && (dn.indexOf(k)>-1 || (k.indexOf(dn)>-1));
+  });
+  if (partial.length===1) return {status:'ok', doc:partial[0], fuzzy:true};
+  return {status:'new', doc:null, fuzzy:false};
+}
+function pmRenderRows(){
+  var rows = PM_STATE.rows;
+  var dlDoc = '<datalist id="pm-dl-doc">'+S.doctors.map(function(d){ return '<option value="'+esc(d.name)+'">'; }).join('')+'</datalist>';
+  var dlType = '<datalist id="pm-dl-type">'+pmTypeOptions(PM_STATE.section).map(function(t){ return '<option value="'+esc(t)+'">'; }).join('')+'</datalist>';
+  var head = '<div class="pm-tblwrap"><table class="pm-table"><thead><tr><th></th><th>رقم الحالة</th><th>اسم الطبيب</th><th>وحدات</th><th>النوع</th><th>ملاحظات</th><th>التطابق</th></tr></thead><tbody>';
+  var body = rows.map(function(r,i){
+    var m = pmMatchDoc(r.doctor);
+    var incomplete = !r.caseNo || !r.doctor;
+    var cls = m.status==='ok' ? 'ok' : m.status==='new' ? 'new' : 'bad';
+    var label = m.status==='ok' ? ('موجود'+(m.fuzzy?' (تقريبي)':'')) : m.status==='new' ? 'هيضاف كطبيب جديد' : 'اكتب اسم الطبيب';
+    return '<tr data-i="'+i+'"'+(incomplete?' class="pm-rowbad"':'')+'>'+
+      '<td><button type="button" class="pm-rowdel" data-pdel="'+i+'">✕</button></td>'+
+      '<td><input class="pm-in pm-case" data-pf="caseNo" value="'+esc(r.caseNo||'')+'"></td>'+
+      '<td><input class="pm-in" data-pf="doctor" list="pm-dl-doc" value="'+esc(r.doctor||'')+'"></td>'+
+      '<td><input class="pm-in pm-units" data-pf="units" value="'+esc(r.units!=null?r.units:'')+'"></td>'+
+      '<td><input class="pm-in" data-pf="type" list="pm-dl-type" value="'+esc(r.type||'')+'"></td>'+
+      '<td><input class="pm-in" data-pf="note" value="'+esc(r.note||'')+'"></td>'+
+      '<td class="pm-match '+cls+'">'+label+'</td>'+
+    '</tr>';
+  }).join('');
+  $('#pm-result').innerHTML = dlDoc+dlType+head+body+'</tbody></table></div>'+
+    '<button type="button" class="btn sm" id="pm-addrow" style="margin-top:8px">+ إضافة صف</button>';
+  $('#pm-savebar').hidden = !rows.length;
+  updatePmCount();
+}
+function updatePmCount(){
+  var ok = PM_STATE.rows.filter(function(r){ return r.caseNo && r.doctor && r.type; }).length;
+  var el = $('#pm-savecount');
+  if (el) el.textContent = PM_STATE.rows.length ? ('جاهز للتسجيل: '+ok+' من '+PM_STATE.rows.length+' صف') : '';
+}
+function pmRead(){
+  var key = pmGetKey();
+  if (!key){ toast('احفظ مفتاح AI الأول — التعليمات فوق'); return; }
+  if (!PM_STATE.b64){ toast('اختار صورة الأول'); return; }
+  var st = $('#pm-status');
+  st.className = 'pm-status';
+  st.innerHTML = '<span class="pm-spin"></span>جارٍ قراءة الصورة... (حسب جودة الخط من 5 لـ 30 ثانية)';
+  $('#pm-read').disabled = true;
+  $('#pm-result').innerHTML = '';
+  $('#pm-savebar').hidden = true;
+  callGemini(key, pmGetModel(), buildPhotoPrompt(PM_STATE.section), PM_STATE.b64).then(function(txt){
+    var rows = pmParseJson(txt).map(function(r){
+      return {
+        caseNo: latinDigits(String(r.caseNo!=null?r.caseNo:'')).trim(),
+        doctor: String(r.doctor!=null?r.doctor:'').trim(),
+        units: r.units,
+        type: String(r.type!=null?r.type:'').trim(),
+        note: String(r.note!=null?r.note:'').trim()
+      };
+    }).filter(function(r){ return r.caseNo || r.doctor; });
+    if (!rows.length) throw new Error('الموديل ماقراش صفوف — صوّر الورقة من فوق وبإضاءة كويسة وجرب تاني');
+    PM_STATE.rows = rows;
+    pmRenderRows();
+    st.className = 'pm-status ok';
+    st.textContent = 'اتقرأ '+rows.length+' صف — راجع الجدول وعدّل أي اسم أو رقم قبل الحفظ';
+    toast('اتقرأ '+rows.length+' صف — راجعهم قبل الحفظ');
+  }).catch(function(e){
+    st.className = 'pm-status err';
+    st.textContent = 'فشل القراءة: '+((e&&e.message)||'خطأ غير معروف');
+  }).then(function(){ $('#pm-read').disabled = false; });
+}
+function pmSave(){
+  var section = PM_STATE.section, dateStr = $('#pm-date').value, techId = $('#pm-tech').value;
+  if (!validYmd(dateStr)){ toast('اختار التاريخ'); return; }
+  if (!techId){ toast('اختار الفني'); return; }
+  var tf = typeFieldFor(section);
+  var valid = [];
+  PM_STATE.rows.forEach(function(r){
+    var p = parseCase(latinDigits(String(r.caseNo||'')).trim(), dateStr);
+    var docName = String(r.doctor||'').trim();
+    var units = Math.min(999, Math.max(1, Math.round(Number(latinDigits(String(r.units==null?'':r.units)))||0)));
+    var typeVal = String(r.type||'').trim();
+    if (!p || !docName || !units || !typeVal) return;
+    valid.push({p:p, docName:docName, units:units, type:typeVal, note:String(r.note||'').trim()});
+  });
+  if (!valid.length){ toast('مفيش صفوف صالحة — راجع أرقام الحالات والأسماء والأنواع'); return; }
+  var newDocs = [];
+  valid.forEach(function(v){
+    var m = pmMatchDoc(v.docName);
+    if (m.status==='ok'){ v.docId = m.doc.id; }
+    else if (!newDocs.some(function(nd){ return nameKey(nd.name)===nameKey(v.docName); })){
+      var nd = {id:'d_'+uid(), name:v.docName, gov:'غير محدد'};
+      newDocs.push(nd);
+      v.docId = nd.id;
+    } else {
+      v.docId = newDocs.filter(function(nd){ return nameKey(nd.name)===nameKey(v.docName); })[0].id;
+    }
+  });
+  $('#pm-save').disabled = true;
+  newDocs.forEach(function(nd){ S.doctors.push(nd); });
+  var prep = newDocs.length ? updateSettings(function(data){
+    newDocs.forEach(function(nd){
+      var k = nameKey(nd.name);
+      if (!data.doctors.some(function(d){ return nameKey(d.name)===k; })) data.doctors.push(nd);
+    });
+  }) : Promise.resolve();
+  prep.then(function(){
+    var done = 0, fails = 0;
+    $('#pm-savecount').textContent = 'جارٍ الحفظ 0 من '+valid.length+'...';
+    var chain = Promise.resolve();
+    valid.forEach(function(v){
+      chain = chain.then(function(){
+        var doc = findDoc(v.docId) || null;
+        var rec = {
+          date:dateStr,
+          techId:techId, techName:techName(techId),
+          caseNo:v.p.no, month:v.p.month, seq:v.p.seq,
+          units:v.units,
+          doctorId:doc?doc.id:v.docId, docName:(doc?doc.name:v.docName),
+          gov:doc?(doc.gov||''):'غير محدد',
+          note:v.note, due:''
+        };
+        rec[tf] = v.type;
+        return saveRecord(section, rec).then(function(){ done++; }).catch(function(){ fails++; });
+      }).then(function(){
+        $('#pm-savecount').textContent = 'جارٍ الحفظ '+done+' من '+valid.length+'...'+(fails?(' (فشل '+fails+')'):'');
+      });
+    });
+    chain.then(function(){
+      $('#pm-save').disabled = false;
+      if (fails){ toast('اتسجل '+done+' وفشل '+fails+' — جرب تاني'); }
+      else { toast('تم تسجيل '+done+' حالة للفني: '+techName(techId)); closePhotoModal(); }
+    });
+  });
+}
+function setupPhotoImport(){
+  window.__pmTest = function(rows, section){
+    PM_STATE.section = PM_SECTIONS.indexOf(section)>-1?section:'final';
+    $('#pm-section').value = PM_STATE.section;
+    PM_STATE.rows = rows;
+    $('#photo-modal').hidden = false;
+    pmRenderRows();
+    var st = $('#pm-status');
+    st.className = 'pm-status ok';
+    st.textContent = '(وضع الاختبار) راجع الجدول قبل الحفظ';
+  };
+  window.__pmRows = function(){ return PM_STATE.rows; };
+  $$('[data-photo]').forEach(function(b){
+    b.addEventListener('click', function(){ openPhotoModal(b.dataset.photo); });
+  });
+  $('#pm-close').addEventListener('click', closePhotoModal);
+  $('#photo-modal').addEventListener('click', function(e){ if (e.target.id==='photo-modal') closePhotoModal(); });
+  document.addEventListener('keydown', function(e){
+    if (e.key==='Escape' && !$('#photo-modal').hidden) closePhotoModal();
+  });
+  $('#pm-file').addEventListener('change', function(e){
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    $('#pm-filemeta').textContent = 'جارٍ تجهيز الصورة...';
+    pmDownscale(f).then(function(b64){
+      PM_STATE.b64 = b64;
+      $('#pm-preview').src = 'data:image/jpeg;base64,'+b64;
+      $('#pm-preview').hidden = false;
+      $('#pm-filemeta').textContent = 'الصورة جاهزة ('+Math.round(b64.length*3/4/1024)+'KB)';
+      $('#pm-read').disabled = false;
+    }).catch(function(){
+      $('#pm-filemeta').textContent = 'تعذر فتح الصورة';
+      $('#pm-read').disabled = true;
+    });
+  });
+  $('#pm-read').addEventListener('click', pmRead);
+  $('#pm-save').addEventListener('click', pmSave);
+  $('#pm-section').addEventListener('change', function(e){
+    PM_STATE.section = e.target.value;
+    if (PM_STATE.rows.length) pmRenderRows();
+  });
+  $('#pm-result').addEventListener('input', function(e){
+    var inp = e.target.closest('[data-pf]');
+    if (!inp) return;
+    var tr = inp.closest('tr');
+    if (!tr || tr.dataset.i==null) return;
+    var i = +tr.dataset.i;
+    PM_STATE.rows[i][inp.dataset.pf] = inp.value;
+    if (inp.dataset.pf==='doctor'){
+      var m = pmMatchDoc(inp.value);
+      var cell = tr.querySelector('.pm-match');
+      if (cell){
+        cell.className = 'pm-match '+(m.status==='ok'?'ok':m.status==='new'?'new':'bad');
+        cell.textContent = m.status==='ok' ? ('موجود'+(m.fuzzy?' (تقريبي)':'')) : m.status==='new' ? 'هيضاف كطبيب جديد' : 'اكتب اسم الطبيب';
+      }
+      tr.classList.toggle('pm-rowbad', !inp.value.trim());
+    }
+    updatePmCount();
+  });
+  $('#pm-result').addEventListener('click', function(e){
+    var del = e.target.closest('[data-pdel]');
+    if (del){
+      PM_STATE.rows.splice(+del.dataset.pdel, 1);
+      pmRenderRows();
+      return;
+    }
+    if (e.target.id==='pm-addrow'){
+      PM_STATE.rows.push({caseNo:'', doctor:'', units:1, type:'', note:''});
+      pmRenderRows();
+      var trs = $('#pm-result').querySelectorAll('tbody tr');
+      if (trs.length){ var last = trs[trs.length-1]; var ci = last.querySelector('.pm-case'); if (ci) ci.focus(); }
+    }
+  });
+}
+
 /* ============================================================
    BIND EVENTS
    ============================================================ */
@@ -3615,6 +4049,7 @@ function init(){
   $('#bulk-del-gov').innerHTML = '<option value="">اختر محافظة...</option>' + govOpts;
 
   bind();
+  setupPhotoImport();
   renderHeader();
   renderAll();
   setTab('final');
